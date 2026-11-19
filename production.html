@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Unicommerce Shipturtle OAuth</title>
+</head>
+<body>
+    <p>Returning to Unicommerce...</p>
+    <script>
+        window.onload = function () {
+            console.log('[shipturtle-oauth-callback] landed on relay page, full URL:', window.location.href);
+
+            var params = new URLSearchParams(window.location.search);
+            var state = params.get('state');
+            console.log('[shipturtle-oauth-callback] raw state param:', state);
+
+            var separator = state ? state.indexOf('~') : -1;
+            if (!state || separator < 1) {
+                console.log('[shipturtle-oauth-callback] missing or malformed state, separator index:', separator);
+                document.body.textContent = 'Shipturtle did not return a valid connect state.';
+                return;
+            }
+
+            var target = new URL(state.substring(0, separator));
+            console.log('[shipturtle-oauth-callback] decoded target URL (before query params):', target.toString());
+
+            ['code', 'error', 'error_description', 'message'].forEach(function (name) {
+                var value = params.get(name);
+                console.log('[shipturtle-oauth-callback] incoming param', name, '=', value);
+                if (value) {
+                    target.searchParams.set(name, value);
+                }
+            });
+            target.searchParams.set('state', state);
+
+            console.log('[shipturtle-oauth-callback] final redirect target:', target.toString());
+            window.location.replace(target.toString());
+        };
+    </script>
+</body>
+</html>
+
